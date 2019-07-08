@@ -1,83 +1,67 @@
-import AdditionApp.*;
-import AssignmentDistri.ManagerInterface;
+package AssignmentDistri;
 
-import org.omg.CosNaming.*;
-import org.omg.CosNaming.NamingContextPackage.*;
-import org.omg.CORBA.*;
-import java.io.*;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.rmi.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
- 
-public class StartClient {
-	static Addition interFace;
-    /**
-     * @param args the command line arguments
-     */
-	
-	static NamingContextExt ncRef;
+
+public class Client {
     static HashMap<String, HashSet<String>> hashMap = new HashMap<>();
-    static boolean idTaken = false;
-    static Scanner obj;
+    static ManagerInterface TorInterface;
+    static ManagerInterface MtlInterface;
+    static ManagerInterface OtwInterface;
     static String id = "";
 
+    static boolean idTaken = false;
+    static Scanner obj;
+    static ManagerInterface interFace;
 
-	
-    public static void main(String[] args) {
-      try {
-          obj = new Scanner(System.in);
+    public static void main(String args[]) {
+        obj = new Scanner(System.in);
 
-	    ORB orb = ORB.init(args, null);
-	    org.omg.CORBA.Object objRef =   orb.resolve_initial_references("NameService");
-	     ncRef = NamingContextExtHelper.narrow(objRef);
-	 
-	    
- 
-            Scanner c=new Scanner(System.in);
-            System.out.println("Welcome to the addition system:");          		    
-		    
-       }
-       catch (Exception e) {
-          System.out.println("Hello Client exception: " + e);
-	  e.printStackTrace();
-       }
-      
-      
-      while (true) {
-          try {
-          	
-              System.out.println("Enter 1 to enter id or 2 to exit");
-              String opt = obj.nextLine();
-              if (opt.equals("1") || opt == "1") {
+        start();
+        /*try {
+            MultiThread();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        */while (true) {
+            try {
+                System.out.println("Enter 1 to enter id or 2 to exit");
+                String opt = obj.nextLine();
+                if (opt.equals("1") || opt == "1") {
 
-                  System.out.println("Enter ID");
-                  id = obj.nextLine().toUpperCase();
-                  String[] vals = split(id);
-                  interFace = gettype(vals[0]);
+                    System.out.println("Enter ID");
+                    id = obj.nextLine().toUpperCase();
+                    String[] vals = split(id);
+                    interFace = gettype(vals[0]);
 
-                  if (vals[1] == "M" || vals[1].equals("M")) {
-                      idTaken = false;
-                      System.out.println("SELECT 1 to 6\n1. Add Event\n2. Remove Event\n3. List Event Availability \n4. Book Event\n5.Cancel Event \n6.Get Booking Schedule");
-                      int ans = obj.nextInt();
-                      options(ans);
-                  } else {
-                      idTaken = true;
-                      System.out.println("SELECT 1 to 3\n1. Book Event\n2.Cancel Event\n3.Get Booking Schedule");
-                      int ans = obj.nextInt();
-                      options(ans + 3);
-                  }
-              } else if (opt.equals("2") || opt == "2") {
-                  System.exit(0);
-              } else {
-                  continue;
-              }
-          } catch (Exception e) {
-              System.out.println("Error While Entering ... Try Again");
-          }
-      }
-
- 
+                    if (vals[1] == "M" || vals[1].equals("M")) {
+                        idTaken = false;
+                        System.out.println("SELECT 1 to 6\n1. Add Event\n2. Remove Event\n3. List Event Availability \n4. Book Event\n5.Cancel Event \n6.Get Booking Schedule");
+                        int ans = obj.nextInt();
+                        options(ans);
+                    } else {
+                        idTaken = true;
+                        System.out.println("SELECT 1 to 3\n1. Book Event\n2.Cancel Event\n3.Get Booking Schedule");
+                        int ans = obj.nextInt();
+                        options(ans + 3);
+                    }
+                } else if (opt.equals("2") || opt == "2") {
+                    System.exit(0);
+                } else {
+                    continue;
+                }
+            } catch (Exception e) {
+                System.out.println("Error While Entering ... Try Again");
+            }
+        }
     }
-    
+
     public static void options(int ans) throws Exception {
         String type = "", uniqueid = "";
         int booking;
@@ -199,24 +183,8 @@ public class StartClient {
             LogData("ERROR",id);
         }
     }
-    
-    public static Addition gettype(String abc) {
-    	try {
-        if (abc.equals("TOR"))
-				interFace= (Addition) AdditionHelper.narrow(ncRef.resolve_str("TOR"));
-		else if (abc.equals("MTL"))
-            interFace= (Addition) AdditionHelper.narrow(ncRef.resolve_str("TOR"));
-        else
-            interFace= (Addition) AdditionHelper.narrow(ncRef.resolve_str("TOR"));
-    }catch (Exception e) {
-		// TODO: handle exception
-	}
-    	return interFace;
-    	
-    	}
-    
 
-    
+
     public static String getType() {
         String type = "";
         System.out.println("Select Event type :- \n1. Seminar\n2.Trade Show\n3.Confrence");
@@ -271,6 +239,36 @@ public class StartClient {
 
         return booking;
     }
+
+
+    public static ManagerInterface gettype(String abc) {
+        if (abc.equals("TOR"))
+            return TorInterface;
+        else if (abc.equals("MTL"))
+            return MtlInterface;
+        else
+            return OtwInterface;
+    }
+
+    public static void TorServer() throws Exception {
+        String registryURL = "rmi://localhost:" + 8080 + "/toronto";
+        TorInterface = (ManagerInterface) Naming.lookup(registryURL);
+        System.out.println("Toronto Server Started");
+
+    }
+
+    public static void MtlServer() throws Exception {
+        String registryURL = "rmi://localhost:" + 8082 + "/montreal";
+        MtlInterface = (ManagerInterface) Naming.lookup(registryURL);
+        System.out.println("Montreal Server Started");
+    }
+
+    public static void OtwServer() throws Exception {
+        String registryURL = "rmi://localhost:" + 8081 + "/ottawa";
+        OtwInterface = (ManagerInterface) Naming.lookup(registryURL);
+        System.out.println("Ottawa Server Started");
+    }
+
     public static String[] split(String id) {
         String vals[] = new String[3];
 
@@ -343,6 +341,23 @@ public class StartClient {
         return ans;
     }
 
+
+    public static void start() {
+
+        try {
+            TorServer();
+            MtlServer();
+            OtwServer();
+
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+    }
+
+
     public static void LogData(String value, String name) {
         Date date = new Date(); // this object contains the current date value
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
@@ -362,5 +377,68 @@ public class StartClient {
 
     }
 
- 
+    public static void MultiThread() throws Exception {
+        try {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println(TorInterface.bookEvent("TORC1000", "TORA060619", "SEMINAR"));
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            Thread thread2 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println(MtlInterface.bookEvent("MTLC1000", "TORA060619", "SEMINAR"));
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            Thread thread3 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println(TorInterface.bookEvent("TORC1001", "TORA060619", "SEMINAR"));
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            Thread thread4 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println(OtwInterface.bookEvent("OTWC1000", "TORA060619", "SEMINAR"));
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            Thread thread5 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.out.println(MtlInterface.bookEvent("MTLC1000", "TORA060619", "SEMINAR"));
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            thread.start();
+            thread2.start();
+            thread3.start();
+            thread4.start();
+            thread5.start();
+
+
+        } catch (Exception e) {
+        }
+    }
+
 }
