@@ -1,4 +1,4 @@
-import AdditionApp.AdditionPOA;
+import EventManagementSystem.EventmanagementPOA;
 import org.omg.CORBA.ORB;
 
 import java.io.BufferedWriter;
@@ -11,11 +11,13 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class ImplementationOttawa extends AdditionPOA {
+public class ImplementationOttawa extends EventmanagementPOA {
     private ORB orb;
     public static HashMap<String, HashMap<String, Integer>> hashMap = new HashMap<>();
     public static HashMap<String, HashSet<String>> customerBooking = new HashMap<>();
@@ -103,6 +105,8 @@ public class ImplementationOttawa extends AdditionPOA {
         }
         return reply;
     }
+    
+    
 
 
     public String bookEvent(String customerID, String eventID, String eventType) {
@@ -396,5 +400,60 @@ public class ImplementationOttawa extends AdditionPOA {
         }
 
     }
+
+	@Override
+
+	public String swapEvent(String customerID, String newEventID, String newEventType, String oldEventID,
+			String oldEventType, String[] customers) {
+
+		int temp = 0;
+		String reply = "";
+		String ans2 = "";
+		String ans = getBookingSchedule(customerID);
+		if (ans.contains(oldEventType + "||" + oldEventID)) {
+
+			if (customerID.substring(0, 3).equals(newEventID.substring(0, 3))) {
+				temp = 0;
+			} else {
+
+				if (customers.length > 0) {
+					ArrayList<String> abc = new ArrayList(Arrays.asList(customers));
+					for (int i = 0; i < abc.size(); i++) {
+						String eid = abc.get(i);
+						String sub = eid.split("\\|\\|")[1].substring(0, 3);
+						if (!customerID.substring(0, 3).equals(sub)) {
+							String usub = newEventID.substring(6, 8);
+							String eidsub = eid.split("\\|\\|")[1].substring(6, 8);
+							if (usub.equals(eidsub))
+								temp++;
+						}
+					}
+				} else {
+					temp = 0;
+				}
+			}
+
+			if (temp < 3) {
+				String answer = bookEvent(customerID, newEventID, newEventType).trim();
+				if (answer.equals("Successfully Booked")) {
+					reply = "Successfully Booked";
+				}
+			} else {
+				reply = "CANNOT BOOK EVENT";
+			}
+
+			if (reply.equals("Successfully Booked")) {
+				cancelEvent(customerID, oldEventID, oldEventType);
+				reply="SUCCESS";
+			}
+
+		} else {
+			reply = "NO BOOKING FOUND FOR CUSTOMER";
+		}
+
+		return reply;
+
+	}
+
 
 }

@@ -1,5 +1,5 @@
-import AdditionApp.Addition;
-import AdditionApp.AdditionHelper;
+import EventManagementSystem.Eventmanagement;
+import EventManagementSystem.EventmanagementHelper;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContextExt;
@@ -29,12 +29,12 @@ public class StartServerOttawa {
 
             // get object reference from the servant
             org.omg.CORBA.Object ref = rootpoa.servant_to_reference(addobj);
-            Addition href = AdditionHelper.narrow(ref);
+            Eventmanagement href = EventmanagementHelper.narrow(ref);
 
             org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
             NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
 
-            NameComponent path[] = ncRef.to_name("TOR");
+            NameComponent path[] = ncRef.to_name("OTW");
             ncRef.rebind(path, href);
 
             System.out.println("Addition Server ready and waiting ...");
